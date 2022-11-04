@@ -3,11 +3,14 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 
 from .models import Category, Product, Client, Order
+from django.shortcuts import render
 
 
 # Create your views here.
 
 def index(request):
+    # cat_list = Category.objects.all().order_by('id')[:10]
+    # return render(request, 'myapp/index0.html', {'cat_list': cat_list})
     cat_list = Category.objects.all().order_by('id')[:10]
     response = HttpResponse()
     heading1 = '<p>' + 'List of categories: ' + '</p>'
