@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Online Store APP</title>
+</head>
+<body>
+    <p>Category : {{ cat.name }}</p>
+    <p>Warehouse Location: {{ cat.warehouse }}</p>
+    <p>List of Products:</p>
+    <ul>
+        {% for prod in prod_list %}
+            <li> {{ prod.name }}</li>
+        {% endfor %}
+    </ul>
+    <p><a href="{% url 'myapp:about' %}">About</a></p>
+    <p><a href="{% url 'myapp:index' %}">Home</a></p>
+</body>
+</html>

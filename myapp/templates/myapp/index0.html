@@ -9,13 +9,13 @@
     <h2>List of Categories</h2>
     <ol>
         {% for cat  in cat_list %}
-            <li> {{ cat.name}} </li>
+            <li><a href="{% url 'myapp:detail' cat_no=cat.id %}"> {{ cat.name}} </a></li>
         {% endfor %}
     </ol>
 {% else %}
     <strong>There are no available categories!</strong>
 {% endif %}
 {#<p><a href="/myapp/about">About page</a></p>#}
-<p><a href="/myapp/about">About page</a></p>
+<p><a href="{% url 'myapp:about' %}">About page</a></p>
 </body>
 </html>
