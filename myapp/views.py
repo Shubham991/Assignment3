@@ -10,7 +10,10 @@ from django.shortcuts import render
 
 def index(request):
     cat_list = Category.objects.all().order_by('id')[:10]
-    return render(request, 'myapp/index0.html', {'cat_list': cat_list})
+    username = "User"
+    if request.user.is_authenticated:
+        username = request.user.username
+    return render(request, 'myapp/index.html', {'cat_list': cat_list, 'username': username})
     # cat_list = Category.objects.all().order_by('id')[:10]
     # response = HttpResponse()
     # heading1 = '<p>' + 'List of categories: ' + '</p>'
@@ -29,7 +32,7 @@ def index(request):
 
 
 def about(request):
-    return render(request, 'myapp/about0.html')
+    return render(request, 'myapp/about.html')
     # response = HttpResponse()
     # heading1 = '<p>This is an Online Store APP</p>'
     # response.write(heading1)
@@ -40,7 +43,7 @@ def detail(request, cat_no):
     response = HttpResponse()
     cat = get_object_or_404(Category, id=cat_no)
     prod_list = Product.objects.filter(category=cat_no)
-    return render(request, 'myapp/detail0.html',
+    return render(request, 'myapp/detail.html',
                   {'cat': cat,
                    'prod_list': prod_list})
 
