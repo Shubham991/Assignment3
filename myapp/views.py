@@ -2,6 +2,7 @@
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 
+from .forms import OrderForm, InterestForm
 from .models import Category, Product, Client, Order
 from django.shortcuts import render
 
@@ -57,3 +58,48 @@ def detail(request, cat_no):
     # for product in prod_list:
     #     response.write('<p> '+str(product)+'</p>')
     # return response
+
+
+def products(request):
+    prodlist = Product.objects.all().order_by('id')[:10]
+    return render(request, 'myapp/products.html', {'prodlist': prodlist})
+
+
+def place_order(request):
+    msg = ''
+    prodlist = Product.objects.all()
+    if request.method == 'POST':
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            order = form.save(commit=False)
+            if order.num_units <= order.product.stock:
+                order.save()
+                msg = 'Your order has been placed successfully.'
+
+                order.product.stock -= order.num_units
+                order.product.save()
+                if order.product.stock < 100:
+                    order.product.refill()
+            else:
+                msg = 'We do not have sufficient stock to fill your order.'
+
+            return render(request, 'myapp/order_response.html', {'msg': msg})
+    else:
+        form = OrderForm()
+        return render(request, 'myapp/placeorder.html', {'form':form, 'msg':msg, 'prodlist':prodlist})
+
+
+def productdetail(request, prod_id):
+    prod = get_object_or_404(Product, id=prod_id)
+    if request.method == 'POST':
+        form = InterestForm(request.POST)
+        if form.is_valid():
+            print(form.cleaned_data)
+            if form.cleaned_data['interested'] == '1':
+                prod.interested += 1
+                prod.save()
+            return index(request)
+
+    else:
+        form = InterestForm()
+        return render(request, 'myapp/productdetail.html', {'prod': prod, 'form': form})

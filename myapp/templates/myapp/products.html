@@ -1,0 +1,12 @@
+{% extends 'myapp/base.html' %}
+{% block title %} Products{% endblock %}
+{% block myhdg %} {% endblock %}
+{% block body_block %}
+    <h1>List of Products:</h1>
+    <ul>
+        {% for prod in prodlist %}
+            <li><a href="{% url 'myapp:productdetail' prod_id=prod.id %}"> {{ prod.name }}</a> ------------ {{ prod.stock }}</li>
+        {% endfor %}
+    </ul>
+    <p><a href="{% url 'myapp:placeorder' %}">Place an Order</a></p>
+{% endblock %}

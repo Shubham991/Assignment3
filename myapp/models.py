@@ -21,9 +21,15 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=100)
     available = models.BooleanField(default=True)
     optional = models.CharField(max_length=300, default='', blank=True)
+    interested = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
+
+    def refill(self):
+        self.stock += 100
+        self.save()
+        return
 
 
 class Client(User):
@@ -50,7 +56,7 @@ class Order(models.Model):
         (2, 'Order Shipped'),
         (3, 'Order Delivered')]
     order_status = models.IntegerField(choices=STATUS_CHOICES, default=1)
-    status_date = models.DateField()
+    status_date = models.DateField(null=True)
 
     def __str__(self):
         return self.product.name + 'x' + str(self.num_units)
