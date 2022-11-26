@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Online Store APP - Login</title>
+</head>
+<body>
+<h1>Login</h1>
+<div class="container">
+<form method="post" action="{% url 'myapp:login' %}">
+{% csrf_token %}
+
+    <label for="username"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username" name="username" required>
+
+    <label for="password"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="password" required>
+
+   <input type="submit" value="login">
+
+
+
+</form>
+
+</div>
+</body>
+</html>

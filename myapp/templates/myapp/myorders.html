@@ -1,0 +1,16 @@
+{% extends 'myapp/base.html' %}
+{% block title %} Orders{% endblock %}
+{% block myhdg %} {% endblock %}
+{% block body_block %}
+    <h1>List of Orders for {{ user }}:</h1>
+    <ul>
+        {% if orderlist %}
+            {% for order in orderlist %}
+                <li>{{ order }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No orders for the client.</li>
+        {% endif %}
+    </ul>
+
+{% endblock %}

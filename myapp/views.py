@@ -1,10 +1,16 @@
 # Import necessary classes
-from django.http import HttpResponse, Http404
+from datetime import datetime
+
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 
 from .forms import OrderForm, InterestForm
 from .models import Category, Product, Client, Order
 from django.shortcuts import render
+
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 
 # Create your views here.
@@ -14,7 +20,16 @@ def index(request):
     username = "User"
     if request.user.is_authenticated:
         username = request.user.username
-    return render(request, 'myapp/index.html', {'cat_list': cat_list, 'username': username})
+
+    lastlogininfo = 'Your last login was more than one hour ago'
+    last_login = request.session.get('last_login', False)
+    if last_login:
+        last_login_datetime = datetime.strptime(last_login, "%d/%m/%Y %H:%M:%S")
+        duration = datetime.now() - last_login_datetime
+        if duration.seconds < 60 * 60:
+            lastlogininfo = last_login
+
+    return render(request, 'myapp/index.html', {'cat_list': cat_list, 'username': username, 'lastlogininfo': lastlogininfo})
     # cat_list = Category.objects.all().order_by('id')[:10]
     # response = HttpResponse()
     # heading1 = '<p>' + 'List of categories: ' + '</p>'
@@ -33,7 +48,14 @@ def index(request):
 
 
 def about(request):
-    return render(request, 'myapp/about.html')
+    numvisits = request.COOKIES.get('about_visits')
+    if numvisits:
+        numvisits = int(numvisits) + 1
+    else:
+        numvisits = 1
+    response = render(request, 'myapp/about.html', {'numvisits': numvisits})
+    response.set_cookie(key='about_visits', value=numvisits, max_age=5 * 60)
+    return response
     # response = HttpResponse()
     # heading1 = '<p>This is an Online Store APP</p>'
     # response.write(heading1)
@@ -86,7 +108,7 @@ def place_order(request):
             return render(request, 'myapp/order_response.html', {'msg': msg})
     else:
         form = OrderForm()
-        return render(request, 'myapp/placeorder.html', {'form':form, 'msg':msg, 'prodlist':prodlist})
+        return render(request, 'myapp/placeorder.html', {'form': form, 'msg': msg, 'prodlist': prodlist})
 
 
 def productdetail(request, prod_id):
@@ -103,3 +125,37 @@ def productdetail(request, prod_id):
     else:
         form = InterestForm()
         return render(request, 'myapp/productdetail.html', {'prod': prod, 'form': form})
+
+
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user:
+            if user.is_active:
+                login(request, user)
+                request.session['last_login'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                request.session.set_expiry(60*60)
+                return HttpResponseRedirect(reverse('myapp:index'))
+            else:
+                return HttpResponse('Your account is disabled.')
+        else:
+            return HttpResponse('Invalid login details.')
+    else:
+        return render(request, 'myapp/login.html')
+
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse(('myapp:index')))
+
+
+@login_required
+def myorders(request):
+    if Client.objects.filter(username=request.user.username):
+        orderlist = Order.objects.filter(client=Client.objects.get(username=request.user.username))
+        return render(request, 'myapp/myorders.html', {'user': request.user.username, 'orderlist': orderlist})
+    else:
+        return HttpResponse('You are not a registered client!')
