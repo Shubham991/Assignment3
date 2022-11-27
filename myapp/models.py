@@ -2,6 +2,7 @@ from django.db import models
 import datetime
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
@@ -14,11 +15,16 @@ class Category(models.Model):
         return self.name
 
 
+def validate_stock(value):
+    if value < 0 or value > 1000:
+        raise ValidationError("The stock must be between 0 to 1000.")
+
+
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField(default=100)
+    stock = models.PositiveIntegerField(default=100, validators=[validate_stock])
     available = models.BooleanField(default=True)
     optional = models.CharField(max_length=300, default='', blank=True)
     interested = models.PositiveIntegerField(default=0)
@@ -44,6 +50,7 @@ class Client(User):
     city = models.CharField(max_length=20, default='Windsor')
     province = models.CharField(max_length=2, choices=PROVINCE_CHOICES, default='ON')
     interested_in = models.ManyToManyField(Category)
+    profile_pic = models.ImageField(upload_to='uploads/', null=True)
 
 
 class Order(models.Model):
